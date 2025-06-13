@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><title>Detections</title></head>
+<body>
+  <h1>Detections for: {{ video.title }}</h1>
+  <video width="640" controls>
+    <source src="{{ video.video_file.url }}" type="video/mp4">
+  </video>
+  <table border="1">
+    <tr>
+      <th>Label</th>
+      <th>Confidence</th>
+      <th>Timestamp</th>
+    </tr>
+    {% for d in detections %}
+    <tr>
+      <td>{{ d.label }}</td>
+      <td>{{ d.confidence }}</td>
+      <td>{{ d.percentage }}%</td>
+      <td>{{ d.timestamp|floatformat:2 }} sec</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
