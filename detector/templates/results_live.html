@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Detections</title>
+  </head>
+  <body>
+    <h1>Detections for: {{ video.title }}</h1>
+    <video id="videoPlayer" controls autoplay width="640">
+      <source src="{{ video.video_file.url }}" type="video/mp4" />
+    </video>
+
+    <div id="alerts"></div>
+
+    <script>
+      const socket = new WebSocket(
+        "ws://" + window.location.host + "/ws/detect/{{ video.id }}/"
+      );
+
+      socket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        const alertBox = document.createElement("div");
+        alertBox.innerHTML = `<b>${data.label}</b> detected at ${data.timestamp}s (Confidence: ${data.confidence}%)`;
+        document.getElementById("alerts").appendChild(alertBox);
+      };
+    </script>
+  </body>
+</html>

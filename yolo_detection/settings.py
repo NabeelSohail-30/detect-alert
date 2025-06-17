@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'detector',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +69,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'yolo_detection.wsgi.application'
+ASGI_APPLICATION = 'yolo_detection.asgi.application'
 
+# Channels Layer (using in-memory for now)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

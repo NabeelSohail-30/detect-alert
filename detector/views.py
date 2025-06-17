@@ -4,22 +4,80 @@ from .forms import VideoUploadForm
 from .models import UploadedVideo, Detection
 from ultralytics import YOLO
 import cv2
+import time
 
 # Load models (adjust paths as needed)
 crowd_model = YOLO("models/crowd.pt")
 fire_model = YOLO("models/fire.pt")
 gun_model = YOLO("models/gun.pt")
 
+from threading import Thread
+
 def upload_video(request):
     if request.method == 'POST':
         form = VideoUploadForm(request.POST, request.FILES)
         if form.is_valid():
             video = form.save()
-            process_video(video.video_file.path, video.id)
-            return redirect('results', video_id=video.id)
+
+            # Run detection in background
+            Thread(target=process_video_real_time, args=(video.video_file.path, video.id)).start()
+
+            return redirect('results_live', video_id=video.id)
     else:
         form = VideoUploadForm()
     return render(request, 'upload.html', {'form': form})
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+def process_video_real_time(video_path, video_id):
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_num = 0
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        results = {
+            'Crowd': crowd_model(frame, verbose=False)[0],
+            'Fire': fire_model(frame, verbose=False)[0],
+            'Gun': gun_model(frame, verbose=False)[0]
+        }
+
+        for label, result in results.items():
+            if result.boxes:
+                for conf in result.boxes.conf:
+                    if float(conf) > 0.8:
+                        timestamp = round(frame_num / fps, 2)
+                        alert = {
+                            'label': label,
+                            'confidence': round(float(conf) * 100, 2),
+                            'timestamp': timestamp,
+                        }
+
+                        # Send alert to frontend
+                        channel_layer = get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            f"video_{video_id}",
+                            {
+                                'type': 'send.alert',
+                                'message': alert
+                            }
+                        )
+                        break
+
+        frame_num += 1
+        time.sleep(1 / fps)
+
+    cap.release()
+
+
+def video_results_live(request, video_id):
+    video = get_object_or_404(UploadedVideo, id=video_id)
+    return render(request, 'results_live.html', {'video': video})
+
 
 def video_results(request, video_id):
     video = get_object_or_404(UploadedVideo, id=video_id)
