@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Alert Dashboard</title>
+    <!-- ✅ Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- ✅ Custom Styling -->
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding: 2rem;
+      }
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      .table-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      thead {
+        background-color: #343a40;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+      .alert-row:hover {
+        background-color: #f1f1f1;
+      }
+      .timestamp-cell {
+        white-space: nowrap;
+      }
+      .badge {
+        padding: 0.6em 1em;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .badge:hover {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="dashboard-header">
+        <h2 class="fw-bold">📟 Real-time Alert Dashboard</h2>
+        <a href="{% url 'upload' %}" class="btn btn-primary btn-lg"
+          >📤 Upload Video</a
+        >
+        <!-- In your dashboard.html -->
+        <a href="{% url 'insights' %}" class="btn btn-outline-primary mt-3"
+          >📊 View Analytics</a
+        >
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Filter by Label</label>
+          <select id="filterLabel" class="form-select">
+            <option value="">All</option>
+            <option value="Fire">Fire</option>
+            <option value="Crowd">Crowd</option>
+            <option value="Gun">Gun</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Filter by Type</label>
+          <select id="filterType" class="form-select">
+            <option value="">All</option>
+            <option value="uploaded">Uploaded</option>
+            <option value="webcam">Webcam</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrapper bg-white p-3 rounded">
+        <table class="table table-hover table-bordered align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Label</th>
+              <th>Confidence (%)</th>
+              <th>Timestamp (s)</th>
+              <th>Video Title</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody id="alerts">
+            <!-- Live alert rows go here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div class="d-flex justify-content-between align-items-center my-3">
+        <button class="btn btn-outline-primary" id="prevPage">Previous</button>
+        <span id="pageInfo" class="fw-bold"></span>
+        <button class="btn btn-outline-primary" id="nextPage">Next</button>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+      <div id="toastContainer"></div>
+    </div>
+
+    <!-- Alert sound -->
+    <audio id="alertSound" src="https://commondatastorage.googleapis.com/codeskulptor-assets/Evillaugh.ogg" preload="auto"></audio>
+
+    <!-- ✅ Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCsdS9YnvMKObOgqUwH3zyusaCFh7HEs2g",
+        authDomain: "aegis-1f952.firebaseapp.com",
+        databaseURL: "https://aegis-1f952-default-rtdb.firebaseio.com",
+        projectId: "aegis-1f952",
+        storageBucket: "aegis-1f952.firebasestorage.app",
+        messagingSenderId: "388139893179",
+        appId: "1:388139893179:web:1b9b7cebbe4d17521cc49e",
+        measurementId: "G-1BT82MBJ9J",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      const alertsRef = db.ref("alerts");
+      let allEntries = [];
+
+      let currentPage = 1;
+      const entriesPerPage = 10;
+      let filteredEntries = [];
+
+      function renderTable(data) {
+        const tbody = document.getElementById("alerts");
+        tbody.innerHTML = "";
+
+        const startIndex = (currentPage - 1) * entriesPerPage;
+        const paginatedData = data.slice(
+          startIndex,
+          startIndex + entriesPerPage
+        );
+
+        paginatedData.forEach((alert) => {
+          let badgeClass = "";
+          let icon = "";
+
+          switch (alert.label) {
+            case "Fire":
+              badgeClass = "danger";
+              icon = "🔥";
+              break;
+            case "Crowd":
+              badgeClass = "warning";
+              icon = "👥";
+              break;
+            case "Gun":
+              badgeClass = "dark";
+              icon = "🔫";
+              break;
+            default:
+              badgeClass = "secondary";
+              icon = "❓";
+          }
+
+          const row = document.createElement("tr");
+          row.className = "alert-row";
+          row.innerHTML = `
+            <td>${new Date(alert.time * 1000).toLocaleTimeString()}</td>
+            <td><span class="badge bg-${badgeClass} fs-6">${icon} ${
+            alert.label
+          }</span></td>
+            <td>${alert.confidence}</td>
+            <td>${alert.timestamp}</td>
+            <td>${alert.video_title}</td>
+            <td><span class="badge bg-info">${alert.type}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        updatePaginationControls(data.length);
+      }
+
+      function updatePaginationControls(totalEntries) {
+        const totalPages = Math.ceil(totalEntries / entriesPerPage);
+        document.getElementById(
+          "pageInfo"
+        ).innerText = `Page ${currentPage} of ${totalPages}`;
+
+        document.getElementById("prevPage").disabled = currentPage === 1;
+        document.getElementById("nextPage").disabled =
+          currentPage === totalPages || totalPages === 0;
+      }
+
+      function applyFilters() {
+        const label = document.getElementById("filterLabel").value;
+        const type = document.getElementById("filterType").value;
+
+        filteredEntries = allEntries.filter((alert) => {
+          const matchLabel = !label || alert.label === label;
+          const matchType = !type || alert.type === type;
+          return matchLabel && matchType;
+        });
+
+        currentPage = 1; // Reset to page 1 on new filter
+        renderTable(filteredEntries);
+      }
+
+      let lastSeenTimestamps = new Set();
+
+      function showToast(alert) {
+        const toastContainer = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+
+        let bgClass = "bg-secondary";
+        switch (alert.label) {
+          case "Fire":
+            bgClass = "bg-danger text-white";
+            break;
+          case "Gun":
+            bgClass = "bg-dark text-white";
+            break;
+          case "Crowd":
+            bgClass = "bg-warning text-dark";
+            break;
+        }
+
+        toast.className = `toast align-items-center text-white ${bgClass} border-0 mb-2`;
+        toast.setAttribute("role", "alert");
+        toast.setAttribute("aria-live", "assertive");
+        toast.setAttribute("aria-atomic", "true");
+
+        toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">
+        ${alert.label} detected in <strong>${alert.video_title}</strong> at ${alert.timestamp}s (${alert.type})
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+
+        toastContainer.appendChild(toast);
+
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        // Auto-remove after hidden
+        toast.addEventListener("hidden.bs.toast", () => toast.remove());
+      }
+
+      // Firebase Fetch
+      alertsRef.on("value", (snapshot) => {
+        const newEntries = [];
+        const currentTimestamps = new Set();
+
+        const allData = snapshot.val();
+        if (!allData) return;
+
+        Object.entries(allData).forEach(([videoId, alerts]) => {
+          Object.entries(alerts).forEach(([timestamp, alert]) => {
+            const composedKey = `${videoId}_${timestamp}`;
+            currentTimestamps.add(composedKey);
+
+            const fullAlert = {
+              ...alert,
+              time: parseInt(timestamp),
+              key: composedKey,
+            };
+            newEntries.push(fullAlert);
+
+            if (!lastSeenTimestamps.has(composedKey)) {
+              showToast(fullAlert);
+              document.getElementById("alertSound").play();
+            }
+          });
+        });
+
+        lastSeenTimestamps = currentTimestamps;
+        newEntries.sort((a, b) => b.time - a.time);
+
+        allEntries = newEntries;
+        applyFilters();
+      });
+
+      // Pagination button events
+      document.getElementById("prevPage").addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable(filteredEntries);
+        }
+      });
+
+      document.getElementById("nextPage").addEventListener("click", () => {
+        const totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable(filteredEntries);
+        }
+      });
+
+      // Filter change events
+      document
+        .getElementById("filterLabel")
+        .addEventListener("change", applyFilters);
+      document
+        .getElementById("filterType")
+        .addEventListener("change", applyFilters);
+    </script>
+  </body>
+</html>

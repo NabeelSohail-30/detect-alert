@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alerts Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+
+  <div class="container py-5">
+    <h2 class="text-center mb-4">📊 Alerts Insights & Analytics</h2>
+
+    <!-- Chart Sections -->
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <canvas id="alertsPerLabelChart"></canvas>
+      </div>
+      <div class="col-md-6 mb-4">
+        <canvas id="alertsOverTimeChart"></canvas>
+      </div>
+      <div class="col-md-6 mb-4">
+        <canvas id="alertsByTypeChart"></canvas>
+      </div>
+      <div class="col-md-6 mb-4">
+        <canvas id="confidenceDistributionChart"></canvas>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsdS9YnvMKObOgqUwH3zyusaCFh7HEs2g",
+      authDomain: "aegis-1f952.firebaseapp.com",
+      databaseURL: "https://aegis-1f952-default-rtdb.firebaseio.com",
+      projectId: "aegis-1f952",
+      storageBucket: "aegis-1f952.appspot.com",
+      messagingSenderId: "388139893179",
+      appId: "1:388139893179:web:1b9b7cebbe4d17521cc49e",
+      measurementId: "G-1BT82MBJ9J"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const alertsRef = db.ref("alerts");
+
+    alertsRef.once("value", (snapshot) => {
+      const allEntries = [];
+
+      const allData = snapshot.val();
+      if (!allData) return;
+
+      Object.entries(allData).forEach(([videoId, alerts]) => {
+        Object.entries(alerts).forEach(([timestamp, alert]) => {
+          allEntries.push({ ...alert, time: timestamp });
+        });
+      });
+
+      buildCharts(allEntries);
+    });
+
+    function buildCharts(data) {
+      const labelsCount = {};
+      const typesCount = {};
+      const confidenceList = [];
+      const timeSeries = {};
+
+      data.forEach((alert) => {
+        // Label Count
+        labelsCount[alert.label] = (labelsCount[alert.label] || 0) + 1;
+
+        // Type Count
+        typesCount[alert.type] = (typesCount[alert.type] || 0) + 1;
+
+        // Confidence
+        confidenceList.push(parseFloat(alert.confidence));
+
+        // Alerts Over Time (by day)
+        const date = new Date(alert.time * 1000).toLocaleDateString();
+        timeSeries[date] = (timeSeries[date] || 0) + 1;
+      });
+
+      // 1. Alerts Per Label Chart
+      new Chart(document.getElementById("alertsPerLabelChart"), {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(labelsCount),
+          datasets: [{
+            data: Object.values(labelsCount),
+            backgroundColor: ["#dc3545", "#ffc107", "#343a40", "#6c757d"]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Alerts Distribution by Label"
+            }
+          }
+        }
+      });
+
+      // 2. Alerts Over Time Chart
+      new Chart(document.getElementById("alertsOverTimeChart"), {
+        type: "line",
+        data: {
+          labels: Object.keys(timeSeries),
+          datasets: [{
+            label: "Alerts",
+            data: Object.values(timeSeries),
+            borderColor: "#0d6efd",
+            backgroundColor: "#0d6efd44",
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Alerts Over Time (by Date)"
+            }
+          }
+        }
+      });
+
+      // 3. Alerts by Type
+      new Chart(document.getElementById("alertsByTypeChart"), {
+        type: "bar",
+        data: {
+          labels: Object.keys(typesCount),
+          datasets: [{
+            label: "Type Count",
+            data: Object.values(typesCount),
+            backgroundColor: "#20c997"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Alerts by Type (Webcam / Uploaded)"
+            }
+          }
+        }
+      });
+
+      // 4. Confidence Distribution
+      new Chart(document.getElementById("confidenceDistributionChart"), {
+        type: "boxplot",
+        data: {
+          labels: ["Confidence"],
+          datasets: [{
+            label: "Confidence Values",
+            data: confidenceList,
+            backgroundColor: "#6610f2"
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Confidence Score Distribution"
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
