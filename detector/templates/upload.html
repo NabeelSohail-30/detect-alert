@@ -1,14 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Upload Video</title>
+  <meta charset="UTF-8">
+  <title>AEGiSS | Upload Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(to right, #000000, #1a0033, #2c004d);
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 0 15px rgba(255, 0, 94, 0.3);
+    }
+
+    .navbar-brand {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to right, #00c6ff, #0072ff, #a800ff, #ff005e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.8rem;
+  }
+
+    .nav-link {
+      position: relative;
+      color: #ffffff !important;
+      margin-right: 1rem;
+      font-weight: 600;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: #ff005e;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      transform: scaleX(1);
+    }
+
+    .nav-link.logout {
+      color: #ff005e !important;
+    }
+
+    .upload-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 40px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 0 30px rgba(90, 0, 255, 0.3);
+      backdrop-filter: blur(15px);
+    }
+
+    .upload-container h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff005e, #5a00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-control,
+    .form-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .form-control::file-selector-button {
+      background: #5a00ff;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      margin-right: 15px;
+      cursor: pointer;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 5px #ff005e;
+      border-color: #ff005e;
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(to right, #ff005e, #5a00ff);
+      border: none;
+      padding: 12px 28px;
+      font-weight: bold;
+      color: white;
+      border-radius: 10px;
+      width: 100%;
+      transition: 0.3s ease-in-out;
+      margin-top: 20px;
+    }
+
+    button[type="submit"]:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 0, 94, 0.4);
+    }
+
+    .footer {
+      background: linear-gradient(145deg, #0a0a0a, #1a1a2e);
+      color: #ccc;
+      padding: 1rem 0;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-  <h1>Upload a Video</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Start Detection</button>
-  </form>
+
+      <!-- 🔼 Navbar -->
+      <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+          <a class="navbar-brand" href="/">AEGiSS</a>
+          <div class="d-flex">
+            <a class="nav-link" href="/">Home</a>
+            <a class="nav-link" href="{% url 'detector:upload' %}">Upload</a>
+            <a class="nav-link" href="{% url 'detector:insights' %}">Insights</a>
+            <a class="nav-link logout" href="{% url 'logout' %}">Logout</a>
+          </div>
+        </div>
+      </nav>
+
+  <div class="container upload-container" style="margin: 140px auto;">
+    <h1>🎥 Upload Surveillance Footage</h1>
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        {{ form.errors }}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">🚀 Start Detection</button>
+    </form>
+  </div>
+
+    <!-- 🔽 Footer -->
+    <footer class="footer mt-auto">
+      <div class="container">
+        <p>&copy; 2025 AEGiSS | Powered by AI Surveillance Intelligence</p>
+      </div>
+    </footer>
+
+  <!-- Bootstrap JS (Optional for future toasts, modals) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

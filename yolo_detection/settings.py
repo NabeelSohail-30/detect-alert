@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Auth',
     'detector',
     'channels',
 ]
@@ -132,3 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+LOGIN_URL = '/'
+LOGIN_REDIRECT_URL = '/home/'   # or wherever your app should redirect after login
+LOGOUT_REDIRECT_URL = '/'       # go back to login page on logout

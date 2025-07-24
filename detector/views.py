@@ -29,6 +29,8 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://aegis-1f952-default-rtdb.firebaseio.com'
 })
 
+def home(request):
+    return render(request, 'home.html')
 
 def dashboard(request):
     return render(request, 'dashboard.html')

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AEGiSS | Secure Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <style>
+      body {
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Segoe UI", sans-serif;
+        color: white;
+        overflow: hidden;
+      }
+
+      .login-container {
+        background: rgba(0, 0, 0, 0.6);
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(0, 123, 255, 0.3);
+        backdrop-filter: blur(10px);
+        width: 100%;
+        max-width: 400px;
+        animation: fadeIn 1.2s ease-in-out;
+      }
+
+      .login-container h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+        background: linear-gradient(
+          to right,
+          #00c6ff,
+          #0072ff,
+          #a800ff,
+          #ff005e
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 10px;
+        color: white;
+      }
+
+      .form-control:focus {
+        box-shadow: 0 0 5px #ff005e;
+        border-color: #ff005e;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+      }
+
+      .btn-login {
+        background: linear-gradient(
+          to right,
+          #00c6ff,
+          #0072ff,
+          #a800ff,
+          #ff005e
+        );
+        border: none;
+        border-radius: 50px;
+        padding: 10px 20px;
+        width: 100%;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      .btn-login:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+
+      .error-message {
+        color: #ff4d4d;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Optional: Floating dots/particles background */
+      .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: url("https://cdn.pixabay.com/photo/2016/11/29/04/17/abstract-1868042_1280.png")
+          center/cover no-repeat;
+        opacity: 0.04;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="particles"></div>
+
+    <div class="login-container">
+      <h2>AEGiSS Login</h2>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Enter your username"
+            class="form-control"
+          />
+        </div>
+        <div class="form-group mb-3">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            class="form-control"
+          />
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <button type="submit" class="btn btn-login">Login</button>
+      </form>
+
+    </div>
+  </body>
+</html>

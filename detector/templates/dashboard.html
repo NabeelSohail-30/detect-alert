@@ -3,121 +3,221 @@
   <head>
     <meta charset="UTF-8" />
     <title>Alert Dashboard</title>
-    <!-- ✅ Bootstrap 5 CDN -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- ✅ Custom Styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
     <style>
       body {
-        background-color: #f8f9fa;
-        padding: 2rem;
+        background: linear-gradient(120deg, #010314, #090c1b);
+        color: #ffffff;
+        font-family: 'Orbitron', sans-serif;
       }
-      .dashboard-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
+  
+      .navbar {
+        background: rgba(0, 0, 0, 0.85);
+        box-shadow: 0 0 15px rgba(255, 0, 94, 0.3);
       }
-      .table-wrapper {
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      table {
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      thead {
-        background-color: #343a40;
-        color: white;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-      }
-      .alert-row:hover {
-        background-color: #f1f1f1;
-      }
-      .timestamp-cell {
-        white-space: nowrap;
-      }
-      .badge {
-        padding: 0.6em 1em;
+  
+      .navbar-brand {
+        font-family: 'Orbitron', sans-serif;
+        background: linear-gradient(to right, #00c6ff, #0072ff, #a800ff, #ff005e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 1.8rem;
+    }
+  
+      .nav-link {
+        position: relative;
+        color: #ffffff !important;
+        margin-right: 1rem;
         font-weight: 600;
-        letter-spacing: 0.5px;
+      }
+  
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        height: 2px;
+        width: 100%;
+        background: #ff005e;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+      }
+  
+      .nav-link:hover::after {
+        transform: scaleX(1);
+      }
+  
+      .nav-link.logout {
+        color: #ff005e !important;
+      }
+  
+      .dashboard-header {
+        text-align: center;
+        margin: 2rem 0;
+      }
+  
+      .table-wrapper {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 0 20px rgba(255, 0, 94, 0.1);
+      }
+  
+      .form-label {
+        color: #ffc8e0;
+      }
+  
+      .form-select {
+        background-color: #1b1b2f;
+        color: #ffffff;
+        border: 1px solid #ff005e;
+      }
+  
+      .footer {
+        background: linear-gradient(145deg, #0a0a0a, #1a1a2e);
+        color: #ccc;
+        padding: 1rem 0;
+        text-align: center;
+      }
+  
+      .btn-outline-primary {
+        border-color: #ff005e;
+        color: #ff005e;
+      }
+  
+      .btn-outline-primary:hover {
+        background-color: #ff005e;
+        color: #fff;
+      }
+  
+      .btn-primary {
+        background-color: #ff005e;
+        border-color: #ff005e;
+      }
+  
+      .btn-primary:hover {
+        background-color: #e6004c;
+        border-color: #e6004c;
       }
 
-      .badge:hover {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      table {
+        font-size: 0.9rem;
       }
-    </style>
+
+      .toast {
+        background: linear-gradient(to right, #ff005e, #5a00ff);
+        box-shadow: 0 0 15px rgba(255, 0, 94, 0.3);
+        border-radius: 10px;
+        font-weight: 500;
+      }
+
+      .badge{
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+      }
+
+      .badge.bg-fire {
+        background-color: #ff005e;
+        color: #fff;
+      }
+
+      .badge.bg-crowd {
+        background-color: #ffc107;
+        color: #000;
+      }
+
+      .badge.bg-gun {
+        background-color: #343a40;
+        color: #fff;
+      }
+
+      .badge.bg-unknown {
+        background-color: #6c757d;
+        color: #fff;
+      }
+      
+    </style>  
   </head>
   <body>
-    <div class="container-fluid">
-      <div class="dashboard-header">
-        <h2 class="fw-bold">📟 Real-time Alert Dashboard</h2>
-        <a href="{% url 'upload' %}" class="btn btn-primary btn-lg"
-          >📤 Upload Video</a
-        >
-        <!-- In your dashboard.html -->
-        <a href="{% url 'insights' %}" class="btn btn-outline-primary mt-3"
-          >📊 View Analytics</a
-        >
+    <!-- 🔼 Navbar -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand" href="/">AEGiSS</a>
+      <div class="d-flex">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="{% url 'detector:upload' %}">Upload</a>
+        <a class="nav-link" href="{% url 'detector:insights' %}">Insights</a>
+        <a class="nav-link logout" href="{% url 'logout' %}">Logout</a>
       </div>
+    </div>
+  </nav>
 
-      <div class="row mb-3">
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Filter by Label</label>
-          <select id="filterLabel" class="form-select">
-            <option value="">All</option>
-            <option value="Fire">Fire</option>
-            <option value="Crowd">Crowd</option>
-            <option value="Gun">Gun</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Filter by Type</label>
-          <select id="filterType" class="form-select">
-            <option value="">All</option>
-            <option value="uploaded">Uploaded</option>
-            <option value="webcam">Webcam</option>
-          </select>
-        </div>
+  <!-- 🔥 Dashboard -->
+  <div class="container py-3 mb-5">
+    <div class="dashboard-header">
+      <h2 class="display-5 text-light fw-bold">Real-time Alert Dashboard</h2>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <label class="form-label">Filter by Label</label>
+        <select id="filterLabel" class="form-select">
+          <option value="">All</option>
+          <option value="Fire">Fire</option>
+          <option value="Crowd">Crowd</option>
+          <option value="Gun">Gun</option>
+        </select>
       </div>
-
-      <div class="table-wrapper bg-white p-3 rounded">
-        <table class="table table-hover table-bordered align-middle mb-0">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Label</th>
-              <th>Confidence (%)</th>
-              <th>Timestamp (s)</th>
-              <th>Video Title</th>
-              <th>Type</th>
-            </tr>
-          </thead>
-          <tbody id="alerts">
-            <!-- Live alert rows go here -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination Controls -->
-      <div class="d-flex justify-content-between align-items-center my-3">
-        <button class="btn btn-outline-primary" id="prevPage">Previous</button>
-        <span id="pageInfo" class="fw-bold"></span>
-        <button class="btn btn-outline-primary" id="nextPage">Next</button>
+      <div class="col-md-4">
+        <label class="form-label">Filter by Type</label>
+        <select id="filterType" class="form-select">
+          <option value="">All</option>
+          <option value="uploaded">Uploaded</option>
+          <option value="webcam">Webcam</option>
+        </select>
       </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
-      <div id="toastContainer"></div>
+    <div class="table-wrapper p-3">
+      <table class="table table-dark table-bordered table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Time</th>
+            <th>Label</th>
+            <th>Confidence (%)</th>
+            <th>Timestamp (s)</th>
+            <th>Video Title</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="alerts">
+          <!-- Firebase injected rows -->
+        </tbody>
+      </table>
     </div>
 
-    <!-- Alert sound -->
-    <audio id="alertSound" src="https://commondatastorage.googleapis.com/codeskulptor-assets/Evillaugh.ogg" preload="auto"></audio>
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <button class="btn btn-outline-primary" id="prevPage">Previous</button>
+      <span id="pageInfo" class="fw-bold"></span>
+      <button class="btn btn-outline-primary" id="nextPage">Next</button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="toastContainer"></div>
+  </div>
+
+  <!-- 🔽 Footer -->
+  <footer class="footer mt-auto">
+    <div class="container">
+      <p>&copy; 2025 AEGiSS | Powered by AI Surveillance Intelligence</p>
+    </div>
+  </footer>
 
     <!-- ✅ Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -161,19 +261,19 @@
 
           switch (alert.label) {
             case "Fire":
-              badgeClass = "danger";
+              badgeClass = "fire";
               icon = "🔥";
               break;
             case "Crowd":
-              badgeClass = "warning";
+              badgeClass = "crowd";
               icon = "👥";
               break;
             case "Gun":
-              badgeClass = "dark";
+              badgeClass = "gun";
               icon = "🔫";
               break;
             default:
-              badgeClass = "secondary";
+              badgeClass = "unknown";
               icon = "❓";
           }
 
@@ -284,7 +384,6 @@
 
             if (!lastSeenTimestamps.has(composedKey)) {
               showToast(fullAlert);
-              document.getElementById("alertSound").play();
             }
           });
         });

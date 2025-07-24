@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGiSS | Smart Surveillance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+        }
+
+        .navbar {
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(to right, #00c6ff, #0072ff, #a800ff, #ff005e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .nav-link.logout {
+            position: relative;
+            color: #ff005e !important;
+            font-weight: bold;
+            transition: color 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .nav-link.logout::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px; /* Slightly below the text */
+            width: 100%;
+            height: 2px;
+            background-color: #ff4d4d;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link.logout:hover {
+            color: #ff4d4d !important;
+        }
+        
+        .nav-link.logout:hover::after {
+            transform: scaleX(1);
+        }        
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #00c6ff, #a800ff, #ff005e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(255,0,94,0.2);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 20px auto;
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #00c6ff, #0072ff, #a800ff);
+            border: none;
+            padding: 10px 30px;
+            font-weight: bold;
+            border-radius: 30px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(0, 198, 255, 0.3);
+            
+        }
+
+        .section {
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            background: linear-gradient(to right, #00c6ff, #ff005e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card {
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            height: 100%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(255,0,94,0.4);
+        }
+
+        .problem-solution-section {
+            background: radial-gradient(circle at top left, #0f0c29, #302b63, #24243e);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #00c6ff, #a800ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-red {
+            background: linear-gradient(to right, #ff5e62, #ff9966);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-green {
+            background: linear-gradient(to right, #00f260, #0575e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        ul {
+            padding-left: 1.2rem;
+        }
+        
+        ul li {
+            margin-bottom: 0.5rem;
+        }     
+        
+        
+        .team-card {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 25px 20px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+        }
+        
+        .team-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #00c6ff;
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+            transition: 0.3s;
+        }
+        
+        .team-img:hover {
+            border-color: #ff005e;
+            box-shadow: 0 0 15px rgba(255, 0, 94, 0.5);
+        }
+        
+        .text-gradient-blue {
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-purple {
+            background: linear-gradient(to right, #a800ff, #6f00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-pink {
+            background: linear-gradient(to right, #ff007f, #ff4d4d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-orange {
+            background: linear-gradient(to right, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-muted {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .contact-section {
+            background: linear-gradient(120deg, #0f0c29, #302b63, #24243e);
+        }
+        
+        .contact-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .contact-card:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+        
+        .btn-contact {
+            background: linear-gradient(to right, #00c6ff, #0072ff, #a800ff);
+            border: none;
+            color: white;
+            font-weight: 600;
+            border-radius: 30px;
+            padding: 10px 20px;
+            transition: 0.3s;
+        }
+        
+        .btn-contact:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }        
+
+        .tech-stack-section {
+            background: linear-gradient(130deg, #0f0c29, #302b63, #24243e);
+        }
+        
+        .stack-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 15px;
+            padding: 25px;
+            height: 100%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+            transition: 0.3s ease;
+        }
+        
+        .stack-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(255, 0, 94, 0.15);
+        }
+        
+        .stack-card h5 {
+            margin-bottom: 15px;
+        }
+        
+        .stack-list {
+            list-style-type: disc;
+            padding-left: 1.3rem;
+        }
+        
+        .stack-list li {
+            margin-bottom: 8px;
+        }
+        
+        /* Gradient headings */
+        .text-gradient-blue {
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-purple {
+            background: linear-gradient(to right, #a800ff, #6f00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-pink {
+            background: linear-gradient(to right, #ff005e, #ff4d4d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-green {
+            background: linear-gradient(to right, #00f260, #0575e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+
+        footer {
+            background-color: rgba(0,0,0,0.8);
+            padding: 30px;
+            text-align: center;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">AEGiSS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#idea">Idea</a></li>
+                <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="#tech">Technology</a></li>
+                <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav ms-3">
+                <li class="nav-item"><a class="nav-link logout" href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container">
+        <h1>Artificially Enhanced Guarding & Intelligent Surveillance System</h1>
+        <p>AEGiSS is an AI-driven surveillance platform for smart threat detection, real-time monitoring, and intelligent guarding using modern computer vision and deep learning algorithms.</p>
+        <a href="{% url 'detector:dashboard' %}" class="btn btn-primary mt-4">Go to Dashboard</a>
+    </div>
+</section>
+
+<section class="py-5 problem-solution-section text-white" id="idea">
+    <div class="container">
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-10 text-center">
+                <h2 class="section-title">Identifying the Problem & Our Solution</h2>
+                <p class="section-subtitle">AEGiSS tackles core surveillance challenges with AI-powered intelligence</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Problem Card -->
+            <div class="col-md-6">
+                <div class="glass-card h-100 border-start border-4 border-danger">
+                    <h4 class="mb-3 text-gradient-red">⚠️ The Problem</h4>
+                    <p>
+                        Traditional surveillance systems rely heavily on manual monitoring, leading to fatigue, missed threats, and delayed responses.
+                        Security personnel cannot maintain focus 24/7, especially with increasing camera feeds in public, industrial, and sensitive zones.
+                    </p>
+                    <ul>
+                        <li>Lack of real-time intelligence</li>
+                        <li>No auto alert mechanisms</li>
+                        <li>High human error risk</li>
+                        <li>Slow threat response times</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Solution Card -->
+            <div class="col-md-6">
+                <div class="glass-card h-100 border-start border-4 border-success">
+                    <h4 class="mb-3 text-gradient-green">🛡️ The Solution</h4>
+                    <p>
+                        AEGiSS is a smart, AI-augmented surveillance system that detects suspicious activities and triggers alerts in real-time.
+                        It reduces dependency on human operators and ensures faster, automated, and intelligent responses.
+                    </p>
+                    <ul>
+                        <li>AI-powered object & behavior detection</li>
+                        <li>Live alerts with video playback</li>
+                        <li>Dashboard for threat tracking</li>
+                        <li>Real-time monitoring with YOLO models</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="section" id="features">
+    <div class="container">
+        <h2 class="section-title">Core Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h4>Real-Time Detection</h4>
+                    <p>Detects intrusions, weapons, fire, or suspicious behavior live using advanced video analysis.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h4>Alert Dashboard</h4>
+                    <p>Alerts instantly displayed with timestamps and video snapshots in a centralized dashboard.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h4>Intelligent Logs</h4>
+                    <p>System maintains searchable logs of detections with probabilities, types, and durations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section tech-stack-section text-white" id="tech">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Technology Stack</h2>
+
+        <div class="row g-4">
+            <!-- Backend -->
+            <div class="col-md-6 col-lg-3">
+                <div class="stack-card border-start border-4 border-primary">
+                    <h5 class="text-gradient-blue">🖥️ Backend</h5>
+                    <ul class="stack-list">
+                        <li>Django (Python)</li>
+                        <li>Django Rest Framework</li>
+                        <li>WebSocket (Channels)</li>
+                        <li>SQLite / PostgreSQL</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Frontend -->
+            <div class="col-md-6 col-lg-3">
+                <div class="stack-card border-start border-4 border-purple">
+                    <h5 class="text-gradient-purple">🎨 Frontend</h5>
+                    <ul class="stack-list">
+                        <li>HTML5, CSS3</li>
+                        <li>Bootstrap 5</li>
+                        <li>JavaScript / jQuery</li>
+                        <li>AJAX Integration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI Models -->
+            <div class="col-md-6 col-lg-3">
+                <div class="stack-card border-start border-4 border-danger">
+                    <h5 class="text-gradient-pink">🧠 AI Models</h5>
+                    <ul class="stack-list">
+                        <li>YOLOv5 / YOLOv8</li>
+                        <li>OpenCV</li>
+                        <li>NumPy / Pandas</li>
+                        <li>Model Confidence Display</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="col-md-6 col-lg-3">
+                <div class="stack-card border-start border-4 border-success">
+                    <h5 class="text-gradient-green">🛠️ Tools & Infra</h5>
+                    <ul class="stack-list">
+                        <li>Git & GitHub</li>
+                        <li>VS Code</li>
+                        <li>Python Virtualenv</li>
+                        <li>Cron (for scheduled tasks)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="section bg-dark text-white" id="team">
+    <div class="container">
+        <h2 class="section-title text-center">Meet the Team</h2>
+        <p class="text-center mb-5">The minds behind AEGiSS — building AI-powered surveillance for a safer tomorrow</p>
+
+        <div class="row g-4">
+            <!-- Member 1 -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="team-card text-center h-100">
+                    <img src="https://via.placeholder.com/150" alt="Team Member" class="team-img mb-3">
+                    <h5 class="text-gradient-blue">Mohammad Nabeel Sohail</h5>
+                    <p class="text-muted">AI Engineer & Full Stack Dev</p>
+                </div>
+            </div>
+
+            <!-- Member 2 -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="team-card text-center h-100">
+                    <img src="https://via.placeholder.com/150" alt="Team Member" class="team-img mb-3">
+                    <h5 class="text-gradient-purple">Laiba Fatima</h5>
+                    <p class="text-muted">ML Researcher & Vision Analyst</p>
+                </div>
+            </div>
+
+            <!-- Member 3 -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="team-card text-center h-100">
+                    <img src="https://via.placeholder.com/150" alt="Team Member" class="team-img mb-3">
+                    <h5 class="text-gradient-pink">Ali Raza</h5>
+                    <p class="text-muted">System Designer & Frontend Lead</p>
+                </div>
+            </div>
+
+            <!-- Member 4 -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="team-card text-center h-100">
+                    <img src="https://via.placeholder.com/150" alt="Team Member" class="team-img mb-3">
+                    <h5 class="text-gradient-orange">Zoya Ahmed</h5>
+                    <p class="text-muted">Testing Lead & Deployment Expert</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="section contact-section text-white" id="contact">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">Contact Us</h2>
+        <p class="text-center mb-5">Got questions, feedback, or collaboration ideas? We’d love to hear from you.</p>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="contact-card p-4">
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="name" placeholder="John Doe">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="john@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Your Message</label>
+                            <textarea class="form-control" id="message" rows="4" placeholder="Your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-contact w-100 mt-3">Send Message</button>
+                    </form>
+                </div>
+                <div class="mt-4 text-center small">
+                    <p>Email: <a href="mailto:nabeel@example.com" class="text-info">nabeel@example.com</a></p>
+                    <p>GitHub: <a href="https://github.com/NabeelSohail-30" class="text-info" target="_blank">NabeelSohail-30</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    &copy; 2025 AEGiSS | Artificially Enhanced Guarding and Intelligent Surveillance System
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
