@@ -79,7 +79,7 @@ def process_video(video_path, video_id):
         for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
             res = model(frame_img, verbose=False)[0]
             for conf in res.boxes.conf:
-                if float(conf) > 0.7:
+                if float(conf) > 0.75:
                     ts_epoch = int(time.time())
                     timestamp = round(frame / fps, 2)
 
@@ -191,18 +191,55 @@ from django.http import StreamingHttpResponse
 from django.shortcuts import render
 import cv2
 
-camera = cv2.VideoCapture(0)
+# camera = cv2.VideoCapture(0)
 
 def gen_frames():  
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Failed to open webcam")
+        return
+
+    fps = cap.get(cv2.CAP_PROP_FPS) or 24
+    last_detection_time = time.time()
+    detection_interval = 1  # Detect every 1 second
+    video_title = "Webcam Feed"
+    video_id = "live_feed"
+
     while True:
-        success, frame = camera.read()
+        success, frame = cap.read()
         if not success:
             break
-        else:
-            _, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        # Do detection only every `detection_interval` seconds
+        current_time = time.time()
+        if current_time - last_detection_time >= detection_interval:
+            for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
+                res = model(frame, verbose=False)[0]
+                for conf in res.boxes.conf:
+                    if float(conf) > 0.75:
+                        ts_epoch = int(time.time())
+
+                        alert_data = {
+                            'label': label,
+                            'confidence': round(float(conf) * 100, 2),
+                            'timestamp': round(current_time, 2),
+                            'video_id': video_id,
+                            'video_title': video_title,
+                            'type': 'live'
+                        }
+
+                        db.reference(f'alerts/{video_id}/{ts_epoch}').set(alert_data)
+                        break  # Alert once per frame per label
+
+            last_detection_time = current_time
+
+        # Stream frame to browser
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    cap.release()
 
 def live_feed(request):
     return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
@@ -243,7 +280,7 @@ def run_live_detection():
         for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
             res = model(frame_img, verbose=False)[0]
             for conf in res.boxes.conf:
-                if float(conf) > 0.7:
+                if float(conf) > 0.75:
                     ts_epoch = int(time.time())
                     alert_data = {
                         'label': label,
