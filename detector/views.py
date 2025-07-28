@@ -185,3 +185,78 @@ def process_video(video_path, video_id):
 #         frame_num += 1
 
 #     cap.release()
+
+
+from django.http import StreamingHttpResponse
+from django.shortcuts import render
+import cv2
+
+camera = cv2.VideoCapture(0)
+
+def gen_frames():  
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+def live_feed(request):
+    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+def live_page(request):
+    return render(request, 'live.html')
+
+live_detection_thread = None
+stop_event = threading.Event()
+
+def start_live_detection(request):
+    global live_detection_thread, stop_event
+    if request.method == 'POST':
+        if live_detection_thread is None or not live_detection_thread.is_alive():
+            stop_event.clear()
+            live_detection_thread = threading.Thread(target=run_live_detection)
+            live_detection_thread.start()
+    return redirect('detector:live_page')
+
+
+def stop_live_detection(request):
+    global stop_event
+    if request.method == 'POST':
+        stop_event.set()
+    return redirect('detector:live_page')
+
+
+def run_live_detection():
+    cap = cv2.VideoCapture(0)
+    fps = cap.get(cv2.CAP_PROP_FPS) or 24
+    frame_num = 0
+
+    while not stop_event.is_set():
+        ret, frame_img = cap.read()
+        if not ret:
+            break
+
+        for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
+            res = model(frame_img, verbose=False)[0]
+            for conf in res.boxes.conf:
+                if float(conf) > 0.7:
+                    ts_epoch = int(time.time())
+                    alert_data = {
+                        'label': label,
+                        'confidence': round(float(conf) * 100, 2),
+                        'timestamp': round(time.time(), 2),
+                        'video_id': "live_feed",
+                        'video_title': "Webcam Feed",
+                        'type': 'live'
+                    }
+                    db.reference(f'alerts/live_feed/{ts_epoch}').set(alert_data)
+                    break
+
+        frame_num += 1
+        time.sleep(1 / fps)
+
+    cap.release()

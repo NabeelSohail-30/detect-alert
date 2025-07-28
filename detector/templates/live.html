@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>Live Detection</title>
+</head>
+<body>
+    <h2>Live Camera Feed</h2>
+    <img src="{% url 'detector:live_feed' %}" width="640" height="480"/>
+
+    <form method="post" action="{% url 'detector:start_live_detection' %}">
+        {% csrf_token %}
+        <button type="submit">Start Detection</button>
+    </form>
+    <form method="post" action="{% url 'detector:stop_live_detection' %}">
+        {% csrf_token %}
+        <button type="submit">Stop Detection</button>
+    </form>
+</body>
+</html>
