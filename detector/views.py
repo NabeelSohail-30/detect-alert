@@ -195,89 +195,15 @@ import cv2
 
 # camera = cv2.VideoCapture(0)
 
-# def gen_frames():  
-#     cap = cv2.VideoCapture("/dev/video2")  # Change to your webcam index or video file path
-#     if not cap.isOpened():
-#         print("Failed to open webcam")
-#         return
-
-#     fps = cap.get(cv2.CAP_PROP_FPS) or 24
-#     last_detection_time = time.time()
-#     detection_interval = 1
-#     video_title = "Webcam Feed"
-#     video_id = "live_feed"
-
-#     while True:
-#         success, frame = cap.read()
-#         if not success:
-#             break
-
-#         current_time = time.time()
-#         if current_time - last_detection_time >= detection_interval:
-#             for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
-#                 res = model(frame, verbose=False)[0]
-#                 for conf in res.boxes.conf:
-#                     if float(conf) > 0.75:
-#                         ts_epoch = int(time.time())
-
-#                         alert_data = {
-#                             'label': label,
-#                             'confidence': round(float(conf) * 100, 2),
-#                             'timestamp': round(current_time, 2),
-#                             'video_id': video_id,
-#                             'video_title': video_title,
-#                             'type': 'live'
-#                         }
-
-#                         db.reference(f'alerts/{video_id}/{ts_epoch}').set(alert_data)
-#                         break  # Alert once per frame per label
-
-#             last_detection_time = current_time
-
-#         # Stream frame to browser
-#         _, buffer = cv2.imencode('.jpg', frame)
-#         frame_bytes = buffer.tobytes()
-#         yield (b'--frame\r\n'
-#                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-#     cap.release()
-
-
-# Confidence thresholds per label
-LABEL_THRESHOLDS = {
-    "Crowd": 0.60,
-    "Fire": 0.80,
-    "Gun": 0.75
-}
-
-# Frame thresholds (consecutive positive detections required per label)
-LABEL_FRAME_THRESHOLDS = {
-    "Crowd": 10,
-    "Fire": 5,
-    "Gun": 5
-}
-
-# Deques for smoothing (individual length per label)
-detection_deques = {
-    "Crowd": deque(maxlen=LABEL_FRAME_THRESHOLDS["Crowd"]),
-    "Fire": deque(maxlen=LABEL_FRAME_THRESHOLDS["Fire"]),
-    "Gun": deque(maxlen=LABEL_FRAME_THRESHOLDS["Gun"]),
-}
-
-# Last alert timestamps
-last_alert_time = {"Crowd": 0, "Fire": 0, "Gun": 0}
-ALERT_COOLDOWN = 3  # seconds
-
-def gen_frames():
-    cap = cv2.VideoCapture("/dev/video2")
+def gen_frames():  
+    cap = cv2.VideoCapture("/dev/video0")
     if not cap.isOpened():
         print("Failed to open webcam")
         return
 
     fps = cap.get(cv2.CAP_PROP_FPS) or 24
     last_detection_time = time.time()
-    detection_interval = 1  # seconds
-
+    detection_interval = 1
     video_title = "Webcam Feed"
     video_id = "live_feed"
 
@@ -287,49 +213,123 @@ def gen_frames():
             break
 
         current_time = time.time()
-
         if current_time - last_detection_time >= detection_interval:
-            for label, model in (
-                ("Crowd", crowd_model),
-                ("Fire", fire_model),
-                ("Gun", gun_model)
-            ):
-                result = model(frame, verbose=False)[0]
-                confs = result.boxes.conf.tolist() if result.boxes.conf is not None else []
+            for label, model in (("Crowd", crowd_model), ("Fire", fire_model), ("Gun", gun_model)):
+                res = model(frame, verbose=False)[0]
+                for conf in res.boxes.conf:
+                    if float(conf) > 0.85:
+                        ts_epoch = int(time.time())
 
-                threshold = LABEL_THRESHOLDS[label]
-                frame_threshold = LABEL_FRAME_THRESHOLDS[label]
-                detections = detection_deques[label]
+                        alert_data = {
+                            'label': label,
+                            'confidence': round(float(conf) * 100, 2),
+                            'timestamp': round(current_time, 2),
+                            'video_id': video_id,
+                            'video_title': video_title,
+                            'type': 'live'
+                        }
 
-                # Check if any box meets the confidence threshold
-                detected = any(float(c) > threshold for c in confs)
-                detections.append(detected)
-
-                print(f"{label} detected: {detected}, confs: {confs}")
-
-                # Trigger alert if detection has been true for required consecutive frames
-                if len(detections) == frame_threshold and all(detections):
-                    ts_epoch = int(time.time())
-                    alert_data = {
-                        'label': label,
-                        'confidence': round(max(confs) * 100, 2) if confs else 0,
-                        'timestamp': round(current_time, 2),
-                        'video_id': video_id,
-                        'video_title': video_title,
-                        'type': 'live'
-                    }
-                    db.reference(f'alerts/{video_id}/{ts_epoch}').set(alert_data)
-                    detections.clear()  # Reset after alert
+                        db.reference(f'alerts/{video_id}/{ts_epoch}').set(alert_data)
+                        break  # Alert once per frame per label
 
             last_detection_time = current_time
 
-        # Encode and stream frame
+        # Stream frame to browser
         _, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     cap.release()
+
+
+# # Confidence thresholds per label
+# LABEL_THRESHOLDS = {
+#     "Crowd": 0.60,
+#     "Fire": 0.80,
+#     "Gun": 0.75
+# }
+
+# # Frame thresholds (consecutive positive detections required per label)
+# LABEL_FRAME_THRESHOLDS = {
+#     "Crowd": 10,
+#     "Fire": 5,
+#     "Gun": 5
+# }
+
+# # Deques for smoothing (individual length per label)
+# detection_deques = {
+#     "Crowd": deque(maxlen=LABEL_FRAME_THRESHOLDS["Crowd"]),
+#     "Fire": deque(maxlen=LABEL_FRAME_THRESHOLDS["Fire"]),
+#     "Gun": deque(maxlen=LABEL_FRAME_THRESHOLDS["Gun"]),
+# }
+
+# # Last alert timestamps
+# last_alert_time = {"Crowd": 0, "Fire": 0, "Gun": 0}
+# ALERT_COOLDOWN = 3  # seconds
+
+# def gen_frames():
+#     cap = cv2.VideoCapture("/dev/video0")
+#     if not cap.isOpened():
+#         print("Failed to open webcam")
+#         return
+
+#     fps = cap.get(cv2.CAP_PROP_FPS) or 24
+#     last_detection_time = time.time()
+#     detection_interval = 1  # seconds
+
+#     video_title = "Webcam Feed"
+#     video_id = "live_feed"
+
+#     while True:
+#         success, frame = cap.read()
+#         if not success:
+#             break
+
+#         current_time = time.time()
+
+#         if current_time - last_detection_time >= detection_interval:
+#             for label, model in (
+#                 ("Crowd", crowd_model),
+#                 ("Fire", fire_model),
+#                 ("Gun", gun_model)
+#             ):
+#                 result = model(frame, verbose=False)[0]
+#                 confs = result.boxes.conf.tolist() if result.boxes.conf is not None else []
+
+#                 threshold = LABEL_THRESHOLDS[label]
+#                 frame_threshold = LABEL_FRAME_THRESHOLDS[label]
+#                 detections = detection_deques[label]
+
+#                 # Check if any box meets the confidence threshold
+#                 detected = any(float(c) > threshold for c in confs)
+#                 detections.append(detected)
+
+#                 print(f"{label} detected: {detected}, confs: {confs}")
+
+#                 # Trigger alert if detection has been true for required consecutive frames
+#                 if len(detections) == frame_threshold and all(detections):
+#                     ts_epoch = int(time.time())
+#                     alert_data = {
+#                         'label': label,
+#                         'confidence': round(max(confs) * 100, 2) if confs else 0,
+#                         'timestamp': round(current_time, 2),
+#                         'video_id': video_id,
+#                         'video_title': video_title,
+#                         'type': 'live'
+#                     }
+#                     db.reference(f'alerts/{video_id}/{ts_epoch}').set(alert_data)
+#                     detections.clear()  # Reset after alert
+
+#             last_detection_time = current_time
+
+#         # Encode and stream frame
+#         _, buffer = cv2.imencode('.jpg', frame)
+#         frame_bytes = buffer.tobytes()
+#         yield (b'--frame\r\n'
+#                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+#     cap.release()
 
     
     
