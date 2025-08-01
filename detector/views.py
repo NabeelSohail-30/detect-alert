@@ -196,7 +196,7 @@ import cv2
 # camera = cv2.VideoCapture(0)
 
 def gen_frames():  
-    cap = cv2.VideoCapture("/dev/video0")
+    cap = cv2.VideoCapture("/dev/video2")
     if not cap.isOpened():
         print("Failed to open webcam")
         return
